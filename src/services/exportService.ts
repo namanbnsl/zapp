@@ -1,7 +1,8 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { saveAs } from 'file-saver';
-import { Slide, PresentationSettings } from '../types/presentation';
+import { Slide, PresentationSettings, Presentation } from '../types/presentation';
+import { PptxExportService } from './pptxExportService';
 
 export class ExportService {
   static async exportToPDF(slides: Slide[], settings: PresentationSettings) {
@@ -188,5 +189,46 @@ export class ExportService {
 
     const blob = new Blob([htmlContent], { type: 'text/html' });
     saveAs(blob, `${settings.title || 'presentation'}.html`);
+  }
+
+  // New PowerPoint export method
+  static async exportToPowerPoint(
+    presentation: Presentation,
+    filename?: string
+  ): Promise<void> {
+    try {
+      await PptxExportService.exportToPowerPoint(presentation, filename);
+    } catch (error) {
+      console.error('PowerPoint export failed:', error);
+      throw error;
+    }
+  }
+
+  // Export current slide only to PowerPoint
+  static async exportCurrentSlideToPowerPoint(
+    slide: Slide,
+    settings: PresentationSettings,
+    filename?: string
+  ): Promise<void> {
+    try {
+      await PptxExportService.exportCurrentSlide(slide, settings, filename);
+    } catch (error) {
+      console.error('Current slide PowerPoint export failed:', error);
+      throw error;
+    }
+  }
+
+  // Export selected slides to PowerPoint
+  static async exportSelectedSlidesToPowerPoint(
+    slides: Slide[],
+    settings: PresentationSettings,
+    filename?: string
+  ): Promise<void> {
+    try {
+      await PptxExportService.exportSelectedSlides(slides, settings, filename);
+    } catch (error) {
+      console.error('Selected slides PowerPoint export failed:', error);
+      throw error;
+    }
   }
 }

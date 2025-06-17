@@ -11,6 +11,7 @@ import { useAppState } from "./hooks/useAppState";
 import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation";
 import { useResizing } from "./hooks/useResizing";
 import { KeyboardShortcutsHelp } from "./components/KeyboardShortcutsHelp";
+import { ExportService } from "./services/exportService";
 
 /**
  * Main Application Component
@@ -61,6 +62,31 @@ export function App() {
     setIsResizingRight,
   } = useResizing();
 
+  // Handle export functionality
+  const handleExport = async (format: string) => {
+    try {
+      switch (format) {
+        case 'pptx':
+          await ExportService.exportToPowerPoint(presentation);
+          break;
+        case 'pdf':
+          await ExportService.exportToPDF(slides, presentation.settings);
+          break;
+        case 'html':
+          ExportService.exportToHTML(slides, presentation.settings);
+          break;
+        case 'images':
+          await ExportService.exportToImages(slides, presentation.settings);
+          break;
+        default:
+          console.warn(`Unknown export format: ${format}`);
+      }
+    } catch (error) {
+      console.error(`Export failed for format ${format}:`, error);
+      // You could add a toast notification here
+    }
+  };
+
   // Enhanced keyboard navigation with all handlers
   useKeyboardNavigation({
     selectSlide,
@@ -68,7 +94,7 @@ export function App() {
     slidesLength: slides.length,
     setIsFullscreen,
     onPreview: () => setIsFullscreen(true),
-    onExport: (format: string) => console.log("Export:", format),
+    onExport: handleExport,
     setIsPlaying,
     isPlaying,
     onSave: () => console.log("Save"),
@@ -134,6 +160,7 @@ export function App() {
           setShowRightPanel={setShowRightPanel}
           showFooter={showFooter}
           setShowFooter={setShowFooter}
+          onExport={handleExport}
         />
 
         {/* Main Content Area */}

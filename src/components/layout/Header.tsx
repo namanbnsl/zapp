@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import {
@@ -11,6 +11,7 @@ import {
   Settings,
   MoreHorizontal,
   PanelBottomOpen,
+  FileText,
 } from "lucide-react";
 
 interface HeaderProps {
@@ -22,6 +23,7 @@ interface HeaderProps {
   setShowRightPanel: (show: boolean) => void;
   showFooter: boolean;
   setShowFooter: (show: boolean) => void;
+  onExport?: (format: string) => void;
 }
 
 /**
@@ -42,7 +44,17 @@ export const Header: React.FC<HeaderProps> = ({
   setShowRightPanel,
   showFooter,
   setShowFooter,
+  onExport,
 }) => {
+  const [showExportMenu, setShowExportMenu] = useState(false);
+
+  const handleExport = (format: string) => {
+    if (onExport) {
+      onExport(format);
+    }
+    setShowExportMenu(false);
+  };
+
   return (
     <header className="flex items-center justify-between px-6 py-4 bg-zinc-900 border-b border-zinc-800 backdrop-blur-sm">
       {/* Left Section - Brand and Project Info */}
@@ -90,15 +102,65 @@ export const Header: React.FC<HeaderProps> = ({
             <Share className="w-4 h-4" />
             Share
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-zinc-400 hover:text-white hover:bg-zinc-800 gap-2"
-            title="Export presentation (Ctrl+E)"
-          >
-            <Download className="w-4 h-4" />
-            Export
-          </Button>
+          
+          {/* Export Dropdown */}
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowExportMenu(!showExportMenu)}
+              className="text-zinc-400 hover:text-white hover:bg-zinc-800 gap-2"
+              title="Export presentation (Ctrl+E)"
+            >
+              <Download className="w-4 h-4" />
+              Export
+            </Button>
+
+            {showExportMenu && (
+              <div className="absolute top-full right-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-50 min-w-48">
+                <button
+                  onClick={() => handleExport('pptx')}
+                  className="w-full text-left px-4 py-3 hover:bg-zinc-700 transition-colors text-white flex items-center gap-3 rounded-t-lg"
+                >
+                  <FileText className="w-4 h-4 text-orange-400" />
+                  <div>
+                    <div className="font-medium">PowerPoint (.pptx)</div>
+                    <div className="text-xs text-zinc-400">Pixel-perfect export</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleExport('pdf')}
+                  className="w-full text-left px-4 py-3 hover:bg-zinc-700 transition-colors text-white flex items-center gap-3"
+                >
+                  <FileText className="w-4 h-4 text-red-400" />
+                  <div>
+                    <div className="font-medium">PDF Document</div>
+                    <div className="text-xs text-zinc-400">Portable format</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleExport('html')}
+                  className="w-full text-left px-4 py-3 hover:bg-zinc-700 transition-colors text-white flex items-center gap-3"
+                >
+                  <FileText className="w-4 h-4 text-blue-400" />
+                  <div>
+                    <div className="font-medium">HTML Slideshow</div>
+                    <div className="text-xs text-zinc-400">Web presentation</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleExport('images')}
+                  className="w-full text-left px-4 py-3 hover:bg-zinc-700 transition-colors text-white flex items-center gap-3 rounded-b-lg"
+                >
+                  <FileText className="w-4 h-4 text-green-400" />
+                  <div>
+                    <div className="font-medium">Image Files</div>
+                    <div className="text-xs text-zinc-400">PNG format</div>
+                  </div>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Visual Divider */}
@@ -169,6 +231,14 @@ export const Header: React.FC<HeaderProps> = ({
           </Button>
         </div>
       </div>
+
+      {/* Click outside to close export menu */}
+      {showExportMenu && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setShowExportMenu(false)}
+        />
+      )}
     </header>
   );
 };
