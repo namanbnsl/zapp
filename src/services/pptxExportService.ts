@@ -6,20 +6,33 @@ export class PptxExportService {
   private static readonly SLIDE_HEIGHT = 5.625; // inches (standard 16:9)
   private static readonly PIXELS_PER_INCH = 96; // Standard DPI
   
-  // Convert pixels to inches for pptxgenjs
-  private static pixelsToInches(pixels: number): number {
-    return pixels / this.PIXELS_PER_INCH;
+  // Canvas dimensions from your app (based on MainSlideArea aspect-video)
+  private static readonly APP_CANVAS_WIDTH = 800; // pixels - typical aspect-video width
+  private static readonly APP_CANVAS_HEIGHT = 450; // pixels - typical aspect-video height (16:9)
+  
+  // Convert pixels to inches with normalization
+  private static pixelsToInches(pixels: number, isWidth: boolean = true): number {
+    // Normalize based on canvas dimensions
+    const canvasSize = isWidth ? this.APP_CANVAS_WIDTH : this.APP_CANVAS_HEIGHT;
+    const slideSize = isWidth ? this.SLIDE_WIDTH : this.SLIDE_HEIGHT;
+    
+    // Convert to normalized ratio, then to inches
+    const normalizedRatio = pixels / canvasSize;
+    return normalizedRatio * slideSize;
   }
 
-  // Convert font size from px to points
+  // Convert font size from px to points with scaling
   private static pxToPoints(pxSize: string): number {
     const px = parseInt(pxSize.replace('px', ''));
-    return Math.round(px * 0.75); // 1px = 0.75pt
+    // Scale font size based on canvas ratio
+    const scaleFactor = this.SLIDE_WIDTH / (this.APP_CANVAS_WIDTH / this.PIXELS_PER_INCH);
+    return Math.round(px * 0.75 * scaleFactor);
   }
 
   // Convert hex color to pptxgenjs format
   private static formatColor(color: string): string {
-    return color.replace('#', '');
+    if (!color) return 'FFFFFF';
+    return color.replace('#', '').toUpperCase();
   }
 
   // Map CSS font family to PowerPoint compatible fonts
@@ -31,7 +44,7 @@ export class PptxExportService {
       'Georgia': 'Georgia',
       'Verdana': 'Verdana',
       'Courier New': 'Courier New',
-      'Geist': 'Calibri', // Fallback for custom fonts
+      'Geist': 'Calibri',
       'sans-serif': 'Calibri',
       'serif': 'Times New Roman',
       'monospace': 'Courier New'
@@ -52,20 +65,54 @@ export class PptxExportService {
     return alignMap[textAlign] || 'left';
   }
 
-  // Get theme colors based on presentation theme
-  private static getThemeColors(theme: string) {
-    const themes: { [key: string]: { background: string; text: string } } = {
-      'white': { background: 'FFFFFF', text: '000000' },
-      'black': { background: '000000', text: 'FFFFFF' },
-      'league': { background: '2B2B2B', text: 'FFFFFF' },
-      'beige': { background: 'F7F3DE', text: '333333' },
-      'sky': { background: 'E6F3FF', text: '003366' },
-      'night': { background: '1A1A2E', text: 'FFFFFF' },
-      'serif': { background: 'F5F5F5', text: '2C3E50' },
-      'simple': { background: 'FFFFFF', text: '333333' }
+  // Extract gradient colors and create background
+  private static parseGradient(gradientString: string): { color: string; gradient?: any } {
+    // Handle CSS gradients like "bg-gradient-to-br from-zinc-900 to-blue-950"
+    if (gradientString.includes('gradient')) {
+      // Default gradient colors based on your app's styling
+      return {
+        color: '1E293B', // zinc-900 equivalent
+        gradient: {
+          type: 'linear',
+          angle: 135, // br = bottom-right = 135 degrees
+          colors: [
+            { color: '1E293B', position: 0 },   // zinc-900
+            { color: '1E3A8A', position: 100 }  // blue-950
+          ]
+        }
+      };
+    }
+    
+    // Handle solid colors
+    return { color: this.formatColor(gradientString) };
+  }
+
+  // Get theme colors and backgrounds
+  private static getThemeBackground(theme: string) {
+    const themes: { [key: string]: any } = {
+      'white': { color: 'FFFFFF' },
+      'black': { color: '000000' },
+      'league': { color: '2B2B2B' },
+      'beige': { color: 'F7F3DE' },
+      'sky': { color: 'E6F3FF' },
+      'night': { color: '1A1A2E' },
+      'serif': { color: 'F5F5F5' },
+      'simple': { color: 'FFFFFF' },
+      // Default gradient background like your app
+      'default': {
+        color: '1E293B',
+        gradient: {
+          type: 'linear',
+          angle: 135,
+          colors: [
+            { color: '1E293B', position: 0 },   // zinc-900
+            { color: '1E3A8A', position: 100 }  // blue-950
+          ]
+        }
+      }
     };
     
-    return themes[theme] || themes['white'];
+    return themes[theme] || themes['default'];
   }
 
   public static async exportToPowerPoint(
@@ -90,13 +137,10 @@ export class PptxExportService {
       });
       pptx.layout = 'LAYOUT_16x9';
 
-      // Get theme colors
-      const themeColors = this.getThemeColors(presentation.settings.theme);
-
       // Process each slide
       for (let i = 0; i < presentation.slides.length; i++) {
         const slide = presentation.slides[i];
-        await this.addSlideToPresentation(pptx, slide, themeColors, i + 1);
+        await this.addSlideToPresentation(pptx, slide, presentation.settings, i + 1);
       }
 
       // Generate and download the file
@@ -114,37 +158,47 @@ export class PptxExportService {
   private static async addSlideToPresentation(
     pptx: PptxGenJS,
     slide: Slide,
-    themeColors: { background: string; text: string },
+    settings: PresentationSettings,
     slideNumber: number
   ): Promise<void> {
     // Add new slide
     const pptxSlide = pptx.addSlide();
     
-    // Set slide background
+    // Set slide background - handle gradients properly
+    let backgroundConfig = this.getThemeBackground(settings.theme);
+    
+    // Override with slide-specific background if available
     if (slide.background?.color) {
-      pptxSlide.background = { color: this.formatColor(slide.background.color) };
+      backgroundConfig = { color: this.formatColor(slide.background.color) };
     } else if (slide.background?.gradient) {
-      // Handle gradient backgrounds (simplified)
-      pptxSlide.background = { color: themeColors.background };
+      backgroundConfig = this.parseGradient(slide.background.gradient);
+    }
+    
+    // Apply background
+    if (backgroundConfig.gradient) {
+      // For gradients, use a shape that covers the entire slide
+      pptxSlide.addShape(pptx.ShapeType.rect, {
+        x: 0,
+        y: 0,
+        w: this.SLIDE_WIDTH,
+        h: this.SLIDE_HEIGHT,
+        fill: {
+          type: 'gradient',
+          angle: backgroundConfig.gradient.angle || 135,
+          colors: backgroundConfig.gradient.colors.map((c: any) => ({
+            color: c.color,
+            position: c.position
+          }))
+        },
+        line: { type: 'none' }
+      });
     } else {
-      pptxSlide.background = { color: themeColors.background };
+      pptxSlide.background = { color: backgroundConfig.color };
     }
 
-    // Add slide number (optional)
-    pptxSlide.addText(`${slideNumber}`, {
-      x: this.pixelsToInches(750),
-      y: this.pixelsToInches(550),
-      w: this.pixelsToInches(50),
-      h: this.pixelsToInches(30),
-      fontSize: 10,
-      color: themeColors.text,
-      align: 'right',
-      fontFace: 'Calibri'
-    });
-
-    // Process each content element
+    // Process each content element with normalized positioning
     for (const element of slide.content) {
-      await this.addElementToSlide(pptxSlide, element, themeColors);
+      await this.addElementToSlide(pptxSlide, element, settings);
     }
 
     // Add speaker notes if they exist
@@ -156,13 +210,14 @@ export class PptxExportService {
   private static async addElementToSlide(
     pptxSlide: any,
     element: any,
-    themeColors: { background: string; text: string }
+    settings: PresentationSettings
   ): Promise<void> {
+    // Use normalized positioning
     const position = element.style.position || { x: 50, y: 50, width: 200, height: 50 };
     
     switch (element.type) {
       case 'text':
-        await this.addTextElement(pptxSlide, element, position, themeColors);
+        await this.addTextElement(pptxSlide, element, position, settings);
         break;
       case 'image':
         await this.addImageElement(pptxSlide, element, position);
@@ -179,13 +234,17 @@ export class PptxExportService {
     pptxSlide: any,
     element: any,
     position: { x: number; y: number; width: number; height: number },
-    themeColors: { background: string; text: string }
+    settings: PresentationSettings
   ): Promise<void> {
-    // Convert pixel positions to inches
-    const x = this.pixelsToInches(position.x);
-    const y = this.pixelsToInches(position.y);
-    const w = this.pixelsToInches(position.width);
-    const h = this.pixelsToInches(position.height);
+    // Convert pixel positions to inches with normalization
+    const x = this.pixelsToInches(position.x, true);
+    const y = this.pixelsToInches(position.y, false);
+    const w = this.pixelsToInches(position.width, true);
+    const h = this.pixelsToInches(position.height, false);
+
+    // Determine default text color based on theme
+    const isDarkTheme = ['black', 'league', 'night'].includes(settings.theme);
+    const defaultTextColor = isDarkTheme ? 'FFFFFF' : '000000';
 
     // Prepare text options with pixel-perfect styling
     const textOptions: any = {
@@ -195,12 +254,15 @@ export class PptxExportService {
       h,
       fontSize: this.pxToPoints(element.style.fontSize || '16px'),
       fontFace: this.mapFontFamily(element.style.fontFamily || 'Arial'),
-      color: this.formatColor(element.style.color || `#${themeColors.text}`),
+      color: this.formatColor(element.style.color || `#${defaultTextColor}`),
       align: this.mapTextAlign(element.style.textAlign || 'left'),
       valign: 'top',
       wrap: true,
       autoFit: false,
-      shrinkText: false
+      shrinkText: false,
+      margin: 0,
+      paraSpaceAfter: 0,
+      paraSpaceBefore: 0
     };
 
     // Apply font weight
@@ -231,10 +293,10 @@ export class PptxExportService {
     position: { x: number; y: number; width: number; height: number }
   ): Promise<void> {
     try {
-      const x = this.pixelsToInches(position.x);
-      const y = this.pixelsToInches(position.y);
-      const w = this.pixelsToInches(position.width);
-      const h = this.pixelsToInches(position.height);
+      const x = this.pixelsToInches(position.x, true);
+      const y = this.pixelsToInches(position.y, false);
+      const w = this.pixelsToInches(position.width, true);
+      const h = this.pixelsToInches(position.height, false);
 
       // Add image (assuming element.content contains image URL or base64)
       pptxSlide.addImage({
@@ -252,7 +314,7 @@ export class PptxExportService {
         ...element,
         content: '[Image placeholder]',
         type: 'text'
-      }, position, { background: 'FFFFFF', text: '666666' });
+      }, position, { theme: 'white' } as PresentationSettings);
     }
   }
 
@@ -261,10 +323,10 @@ export class PptxExportService {
     element: any,
     position: { x: number; y: number; width: number; height: number }
   ): Promise<void> {
-    const x = this.pixelsToInches(position.x);
-    const y = this.pixelsToInches(position.y);
-    const w = this.pixelsToInches(position.width);
-    const h = this.pixelsToInches(position.height);
+    const x = this.pixelsToInches(position.x, true);
+    const y = this.pixelsToInches(position.y, false);
+    const w = this.pixelsToInches(position.width, true);
+    const h = this.pixelsToInches(position.height, false);
 
     // Add basic rectangle shape (can be extended for other shapes)
     pptxSlide.addShape(pptx.ShapeType.rect, {
