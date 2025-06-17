@@ -39,15 +39,31 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
   reorderSlides,
 }) => {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedIndex(index);
     e.dataTransfer.effectAllowed = 'move';
+    // Set a custom drag image
+    const dragImage = e.currentTarget.cloneNode(true) as HTMLElement;
+    dragImage.style.position = 'absolute';
+    dragImage.style.top = '-1000px';
+    document.body.appendChild(dragImage);
+    e.dataTransfer.setDragImage(dragImage, 0, 0);
+    // Remove the drag image after a short delay
+    setTimeout(() => {
+      document.body.removeChild(dragImage);
+    }, 0);
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
+    setDragOverIndex(index);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
   };
 
   const handleDrop = (e: React.DragEvent, dropIndex: number) => {
@@ -56,6 +72,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
       reorderSlides(draggedIndex, dropIndex);
     }
     setDraggedIndex(null);
+    setDragOverIndex(null);
   };
 
   return (
@@ -87,9 +104,10 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                 key={slide.id}
                 draggable
                 onDragStart={(e) => handleDragStart(e, index)}
-                onDragOver={handleDragOver}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, index)}
-                className={`${draggedIndex === index ? 'opacity-50' : ''}`}
+                className="relative"
               >
                 <SlidePreview
                   slide={slide}
@@ -98,6 +116,8 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                   canDelete={slides.length > 1}
                   onSelect={() => selectSlide(index)}
                   onDelete={() => deleteSlide(index)}
+                  isDragging={draggedIndex === index}
+                  isDragOver={dragOverIndex === index}
                 />
               </div>
             ))}
@@ -114,7 +134,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
 
       {/* Resize Handle */}
       <div
-        className={`w-1 cursor-col-resize hover:bg-blue-500 transition-colors ${isResizingLeft ? "bg-blue-500" : "bg-transparent"
+        className={`w-1 bg-zinc-800 hover:bg-blue-500 cursor-col-resize transition-colors ${isResizingLeft ? "bg-blue-500" : ""
           }`}
         onMouseDown={() => setIsResizingLeft(true)}
       />

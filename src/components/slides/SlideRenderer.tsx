@@ -19,7 +19,7 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({ slide }) => {
         <h2 className="text-4xl md:text-6xl font-bold mb-8 text-white leading-tight">
           {slide.title || "Untitled Slide"}
         </h2>
-        
+
         {/* Slide Content */}
         {slide.content && slide.content.length > 0 && (
           <div className="space-y-4">

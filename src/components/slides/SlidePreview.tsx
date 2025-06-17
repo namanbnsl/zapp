@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "../ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, GripVertical } from "lucide-react";
 
 interface SlidePreviewProps {
   slide: any;
@@ -9,6 +9,8 @@ interface SlidePreviewProps {
   canDelete: boolean;
   onSelect: () => void;
   onDelete: () => void;
+  isDragging?: boolean;
+  isDragOver?: boolean;
 }
 
 /**
@@ -24,6 +26,8 @@ export const SlidePreview: React.FC<SlidePreviewProps> = ({
   canDelete,
   onSelect,
   onDelete,
+  isDragging,
+  isDragOver,
 }) => {
   // Get preview styling based on slide index
   const getSlidePreview = (index: number) => {
@@ -62,11 +66,34 @@ export const SlidePreview: React.FC<SlidePreviewProps> = ({
 
   return (
     <div
-      className={`flex items-center gap-2 p-1.5 mb-1 cursor-pointer rounded transition-all duration-200 hover:bg-zinc-800 group ${
-        isSelected ? "bg-zinc-800 ring-1 ring-blue-500" : ""
-      }`}
+      className={`flex items-center gap-2 p-1.5 mb-1 rounded transition-all duration-200 group relative
+        ${isSelected ? "bg-zinc-800 ring-1 ring-purple-400" : "hover:bg-zinc-800"}
+        ${isDragging ? "opacity-50 cursor-grabbing" : "cursor-pointer"}
+        ${isDragOver ? "border-t-2 border-purple-400" : ""}
+      `}
       onClick={onSelect}
     >
+      {/* Drag Handle */}
+      <div
+        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          const element = e.currentTarget.closest('[draggable]') as HTMLElement;
+          if (element) {
+            element.draggable = true;
+          }
+        }}
+        onMouseUp={(e) => {
+          e.stopPropagation();
+          const element = e.currentTarget.closest('[draggable]') as HTMLElement;
+          if (element) {
+            element.draggable = false;
+          }
+        }}
+      >
+        <GripVertical className="w-4 h-4 text-zinc-500 hover:text-zinc-300" />
+      </div>
+
       {/* Slide Number */}
       <div className="flex-shrink-0 w-5 text-xs font-medium text-zinc-500 text-center">
         {index + 1}
@@ -75,7 +102,8 @@ export const SlidePreview: React.FC<SlidePreviewProps> = ({
       {/* Slide Thumbnail */}
       <div className="flex-shrink-0">
         <div
-          className={`w-12 h-8 rounded border ${preview.borderColor} ${preview.thumbnail} flex items-center justify-center relative overflow-hidden`}
+          className={`w-12 h-8 rounded border ${preview.borderColor} ${preview.thumbnail} flex items-center justify-center relative overflow-hidden transition-transform duration-200 ${isDragging ? "scale-105" : ""
+            }`}
         >
           {/* Simple placeholder content representation */}
           <div className="text-xs text-zinc-800 font-medium text-center p-1">

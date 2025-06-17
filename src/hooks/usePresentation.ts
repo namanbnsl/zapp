@@ -72,25 +72,25 @@ export const usePresentation = () => {
   const addSlide = useCallback((layoutType: Slide['layout'] = 'content') => {
     const newSlide = createDefaultSlide(`slide-${Date.now()}`);
     newSlide.layout = layoutType;
-    
+
     setPresentation(prev => ({
       ...prev,
       slides: [...prev.slides, newSlide],
       updatedAt: new Date().toISOString()
     }));
-    
+
     setCurrentSlide(presentation.slides.length);
   }, [presentation.slides.length]);
 
   const deleteSlide = useCallback((index: number) => {
     if (presentation.slides.length <= 1) return;
-    
+
     setPresentation(prev => ({
       ...prev,
       slides: prev.slides.filter((_, i) => i !== index),
       updatedAt: new Date().toISOString()
     }));
-    
+
     if (currentSlide >= index && currentSlide > 0) {
       setCurrentSlide(currentSlide - 1);
     }
@@ -105,7 +105,7 @@ export const usePresentation = () => {
   const updateSlide = useCallback((index: number, updatedSlide: Partial<Slide>) => {
     setPresentation(prev => ({
       ...prev,
-      slides: prev.slides.map((slide, i) => 
+      slides: prev.slides.map((slide, i) =>
         i === index ? { ...slide, ...updatedSlide } : slide
       ),
       updatedAt: new Date().toISOString()
@@ -117,14 +117,14 @@ export const usePresentation = () => {
       const newSlides = [...prev.slides];
       const [movedSlide] = newSlides.splice(fromIndex, 1);
       newSlides.splice(toIndex, 0, movedSlide);
-      
+
       return {
         ...prev,
         slides: newSlides,
         updatedAt: new Date().toISOString()
       };
     });
-    
+
     if (currentSlide === fromIndex) {
       setCurrentSlide(toIndex);
     }
