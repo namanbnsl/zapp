@@ -5,7 +5,6 @@ import {
   FolderOpen,
   Download,
   Play,
-  Eye,
   Bold,
   Italic,
   Underline,
@@ -13,7 +12,6 @@ import {
   AlignCenter,
   AlignRight,
   Type,
-  Palette,
   Image,
   Video,
   Square,
@@ -24,13 +22,7 @@ import {
   Copy,
   Cast as Paste,
   Scissors,
-  Home,
   Layout,
-  AtSign as Design,
-  MoreHorizontal,
-  Maximize2,
-  PanelRightOpen,
-  PanelLeftOpen,
 } from "lucide-react";
 import { Slide, PresentationSettings } from "../types/presentation";
 
@@ -46,22 +38,14 @@ interface RibbonMenuProps {
 
 export const RibbonMenu: React.FC<RibbonMenuProps> = ({
   activeTab,
-  onTabChange,
+  // onTabChange,
   onPreview,
   onExport,
-  currentSlide,
-  onSlideUpdate,
+  // currentSlide,
+  // onSlideUpdate,
   onPresentationUpdate,
 }) => {
   const [showExportMenu, setShowExportMenu] = useState(false);
-
-  const tabs = [
-    { id: "home", name: "Home", icon: Home },
-    { id: "insert", name: "Insert", icon: Square },
-    { id: "design", name: "Design", icon: Palette },
-    { id: "transitions", name: "Transitions", icon: Play },
-    { id: "slideshow", name: "Slideshow", icon: Eye },
-  ];
 
   const renderHomeTab = () => (
     <div className="flex items-center space-x-4 p-2">

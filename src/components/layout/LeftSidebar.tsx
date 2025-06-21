@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "../ui/button";
 import { ScrollArea } from "../ui/scroll-area";
-import { Plus, Trash2, GripVertical } from "lucide-react";
+import { Plus } from "lucide-react";
 import { SlidePreview } from "../slides/SlidePreview";
 
 interface LeftSidebarProps {

@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Type, Image, Video, Square, Move, RotateCcw } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Type, Image, Square } from 'lucide-react';
 import { Slide, SlideContent } from '../types/presentation';
 
 interface SlideEditorProps {
@@ -84,9 +84,8 @@ export const SlideEditor: React.FC<SlideEditorProps> = ({
     return (
       <div
         key={element.id}
-        className={`absolute cursor-pointer transition-all ${
-          isSelected ? 'ring-2 ring-blue-500 ring-opacity-50' : ''
-        }`}
+        className={`absolute cursor-pointer transition-all ${isSelected ? 'ring-2 ring-blue-500 ring-opacity-50' : ''
+          }`}
         style={{
           left: position.x,
           top: position.y,
@@ -120,7 +119,7 @@ export const SlideEditor: React.FC<SlideEditorProps> = ({
             {element.content}
           </div>
         )}
-        
+
         {isSelected && (
           <div className="absolute -top-8 left-0 bg-white border rounded shadow-lg p-1 flex space-x-1">
             <button
@@ -203,7 +202,7 @@ export const SlideEditor: React.FC<SlideEditorProps> = ({
           style={{ width: '800px', height: '600px' }}
         >
           {slide.content.map(renderElement)}
-          
+
           {slide.content.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center text-gray-400">
               <div className="text-center">

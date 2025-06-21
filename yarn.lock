@@ -1763,16 +1763,6 @@ postcss@^8.0.0, postcss@^8.1.0, postcss@^8.2.14, postcss@^8.4.21, postcss@^8.4.3
     picocolors "^1.1.1"
     source-map-js "^1.2.1"
 
-pptxgenjs@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.npmjs.org/pptxgenjs/-/pptxgenjs-4.0.0.tgz"
-  integrity sha512-iXpmNbivy64cxb4W05nDpUBkhoa73qCmvDZ2CTXYhvvX7LkJKAs6wWEEWlm3OSVJdaZtjY+AAmWgcmwNH8fSkA==
-  dependencies:
-    "@types/node" "^22.8.1"
-    https "^1.0.0"
-    image-size "^1.1.1"
-    jszip "^3.10.1"
-
 prelude-ls@^1.2.1:
   version "1.2.1"
   resolved "https://registry.npmjs.org/prelude-ls/-/prelude-ls-1.2.1.tgz"
@@ -2294,7 +2284,7 @@ which@^2.0.1:
 word-wrap@^1.2.5:
   version "1.2.5"
   resolved "https://registry.npmjs.org/word-wrap/-/word-wrap-1.2.5.tgz"
-  integrity sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==
+  integrity sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDu+WHffIWbuh2tCjhyQhTBPMf5E9jDEH4FOmTYgYwbKwtQ4wB3vWB3K5KQTveQ==
 
 "wrap-ansi-cjs@npm:wrap-ansi@^7.0.0":
   version "7.0.0"

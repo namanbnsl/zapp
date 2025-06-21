@@ -20,7 +20,7 @@ interface SlidePreviewProps {
  * Includes selection state and delete functionality.
  */
 export const SlidePreview: React.FC<SlidePreviewProps> = ({
-  slide,
+  // slide,
   index,
   isSelected,
   canDelete,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Header } from "./components/layout/Header";
 import { LeftSidebar } from "./components/layout/LeftSidebar";
 import { MainSlideArea } from "./components/layout/MainSlideArea";
@@ -11,7 +11,6 @@ import { useAppState } from "./hooks/useAppState";
 import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation";
 import { useResizing } from "./hooks/useResizing";
 import { KeyboardShortcutsHelp } from "./components/KeyboardShortcutsHelp";
-import { ExportService } from "./services/exportService";
 
 /**
  * Main Application Component
@@ -29,9 +28,9 @@ export function App() {
     addSlide,
     deleteSlide,
     selectSlide,
-    updateSlide,
+    // updateSlide,
     reorderSlides,
-    updatePresentationSettings,
+    // updatePresentationSettings,
     loadPresentation,
   } = usePresentation();
 
@@ -62,41 +61,16 @@ export function App() {
     setIsResizingRight,
   } = useResizing();
 
-  // Handle export functionality
-  const handleExport = async (format: string) => {
-    try {
-      switch (format) {
-        case 'pptx':
-          await ExportService.exportToPowerPoint(presentation);
-          break;
-        case 'pdf':
-          await ExportService.exportToPDF(slides, presentation.settings);
-          break;
-        case 'html':
-          ExportService.exportToHTML(slides, presentation.settings);
-          break;
-        case 'images':
-          await ExportService.exportToImages(slides, presentation.settings);
-          break;
-        default:
-          console.warn(`Unknown export format: ${format}`);
-      }
-    } catch (error) {
-      console.error(`Export failed for format ${format}:`, error);
-      // You could add a toast notification here
-    }
-  };
-
   // Enhanced keyboard navigation with all handlers
   useKeyboardNavigation({
     selectSlide,
     currentSlide,
     slidesLength: slides.length,
     setIsFullscreen,
-    onPreview: () => setIsFullscreen(true),
-    onExport: handleExport,
-    setIsPlaying,
     isPlaying,
+    setIsPlaying,
+    onExport: () => console.log("Export"),
+    onPreview: () => setIsFullscreen(true),
     onSave: () => console.log("Save"),
     onUndo: () => console.log("Undo"),
     onRedo: () => console.log("Redo"),
@@ -160,7 +134,6 @@ export function App() {
           setShowRightPanel={setShowRightPanel}
           showFooter={showFooter}
           setShowFooter={setShowFooter}
-          onExport={handleExport}
         />
 
         {/* Main Content Area */}

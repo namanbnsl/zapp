@@ -2,33 +2,6 @@ import { useState, useCallback } from 'react';
 import { Slide, Presentation, PresentationSettings } from '../types/presentation';
 import { dummyPresentation } from '../utils/dummyData';
 
-const defaultPresentationSettings: PresentationSettings = {
-  title: 'Untitled Presentation',
-  author: 'Anonymous',
-  theme: 'white',
-  transition: 'slide',
-  controls: true,
-  progress: true,
-  center: true,
-  touch: true,
-  loop: false,
-  rtl: false,
-  shuffle: false,
-  fragments: true,
-  embedded: false,
-  help: true,
-  showNotes: false,
-  autoSlide: 0,
-  autoSlideStoppable: true,
-  mouseWheel: false,
-  hideAddressBar: true,
-  previewLinks: false,
-  focusBodyOnLoad: true,
-  hash: false,
-  respondToHashChanges: true,
-  jumpToSlide: true,
-  history: false
-};
 
 const createDefaultSlide = (id: string): Slide => ({
   id,

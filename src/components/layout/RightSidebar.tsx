@@ -34,7 +34,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   slides,
   currentSlide,
   rightPanelWidth,
-  isResizingRight,
+  // isResizingRight,
   setIsResizingRight,
 }) => {
   // State for chat messages and input
@@ -122,20 +122,17 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
             {messages.map((message: any) => (
               <div
                 key={message.id}
-                className={`flex gap-2 ${
-                  message.type === "user" ? "justify-end" : "justify-start"
-                }`}
+                className={`flex gap-2 ${message.type === "user" ? "justify-end" : "justify-start"
+                  }`}
               >
                 <div
-                  className={`flex gap-2 max-w-[85%] ${
-                    message.type === "user" ? "flex-row-reverse" : ""
-                  }`}
+                  className={`flex gap-2 max-w-[85%] ${message.type === "user" ? "flex-row-reverse" : ""
+                    }`}
                 >
                   {/* Message Avatar */}
                   <div
-                    className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      message.type === "ai" ? "bg-purple-600" : "bg-blue-600"
-                    }`}
+                    className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${message.type === "ai" ? "bg-purple-600" : "bg-blue-600"
+                      }`}
                   >
                     {message.type === "ai" ? (
                       <Bot className="w-3 h-3" />
@@ -143,14 +140,13 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                       <User className="w-3 h-3" />
                     )}
                   </div>
-                  
+
                   {/* Message Content */}
                   <div
-                    className={`rounded-lg p-2 ${
-                      message.type === "ai"
+                    className={`rounded-lg p-2 ${message.type === "ai"
                         ? "bg-zinc-800 text-zinc-300"
                         : "bg-blue-600 text-white"
-                    }`}
+                      }`}
                   >
                     <p className="text-xs leading-relaxed whitespace-pre-line">
                       {message.content}
